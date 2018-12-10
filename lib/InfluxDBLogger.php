@@ -36,6 +36,12 @@ class InfluxDBLogger
     private static $measurement_name = 'resque';
 
     /**
+     * Default measurement tags.
+     * @var array
+     */
+    private static $default_tags = [];
+
+    /**
      * Hostname when connecting to InfluxDB.
      * @var string
      */
@@ -138,6 +144,18 @@ class InfluxDBLogger
     public static function setMeasurementName($name)
     {
         self::$measurement_name = $name;
+    }
+
+    /**
+     * Add a set of tags to all measurements.
+     *
+     * @param string $tags Tags to use.
+     *
+     * @return void
+     */
+    public static function setDefaultTags($tags)
+    {
+        self::$default_tags = $tags;
     }
 
     /**
@@ -325,6 +343,8 @@ class InfluxDBLogger
     private static function sendMetric($fields, $tags)
     {
         $db = self::getDB();
+
+        $tags += self::$default_tags;
 
         $point = new Point(self::$measurement_name);
         $point->setFields($fields);
