@@ -105,7 +105,7 @@ class InfluxDBLogger
      *
      * @return void
      */
-    public static function setClient($driver)
+    public static function setDriver($driver)
     {
         self::$driver = $driver;
     }
