@@ -234,6 +234,7 @@ class InfluxDBLogger
             [
                 'class'  => $job->payload['class'],
                 'queue'  => $job->queue,
+                'exception'  => get_class($e),
                 'status' => 'failed',
             ]
         );
