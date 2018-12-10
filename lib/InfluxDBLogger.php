@@ -164,6 +164,7 @@ class InfluxDBLogger
      */
     public static function beforeFork(\Resque_Job $job)
     {
+        file_put_contents(sys_get_temp_dir() . 'beforeFork.log', 'beforeFork',FILE_APPEND);
         $job->influxDBStartTime = microtime(TRUE);
 
         if (isset($job->payload['queue_time']))
@@ -181,6 +182,7 @@ class InfluxDBLogger
      */
     public static function afterPerform(\Resque_Job $job)
     {
+        file_put_contents(sys_get_temp_dir() . 'afterPerform.log', 'afterPerform',FILE_APPEND);
         $executionTime = round(microtime(TRUE) - $job->influxDBStartTime) * 1000;
         self::sendMetric(
             [
@@ -205,6 +207,7 @@ class InfluxDBLogger
      */
     public static function onFailure(\Exception $e, \Resque_Job $job)
     {
+        file_put_contents(sys_get_temp_dir() . 'onFailureHook.log', $e->getMessage(),FILE_APPEND);
         $executionTime = round(microtime(TRUE) - $job->influxDBStartTime) * 1000;
         self::sendMetric(
             [
