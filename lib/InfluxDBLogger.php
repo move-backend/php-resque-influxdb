@@ -168,7 +168,7 @@ class InfluxDBLogger
 
         if (isset($job->payload['queue_time']))
         {
-            $job->influxDBTimeInQueue = round(microtime(TRUE) - $job->payload['queue_time']) * 1000;
+            $job->influxDBTimeInQueue = microtime(TRUE) - $job->payload['queue_time'];
         }
     }
 
@@ -181,7 +181,7 @@ class InfluxDBLogger
      */
     public static function afterPerform(\Resque_Job $job)
     {
-        $executionTime = round(microtime(TRUE) - $job->influxDBStartTime) * 1000;
+        $executionTime = microtime(TRUE) - $job->influxDBStartTime;
         self::sendMetric(
             [
                 'execution_time' => $executionTime,
@@ -205,7 +205,7 @@ class InfluxDBLogger
      */
     public static function onFailure(\Exception $e, \Resque_Job $job)
     {
-        $executionTime = round(microtime(TRUE) - $job->influxDBStartTime) * 1000;
+        $executionTime = microtime(TRUE) - $job->influxDBStartTime;
         self::sendMetric(
             [
                 'error'          => $e->getMessage(),
