@@ -12,6 +12,7 @@
 namespace Resque\Logging;
 
 use InfluxDB\Client;
+use InfluxDB\Driver\DriverInterface;
 use InfluxDB\Point;
 
 /**
@@ -53,6 +54,12 @@ class InfluxDBLogger
     private static $password = '';
 
     /**
+     * InfluxDB request driver.
+     * @var DriverInterface|null
+     */
+    private static $driver = NULL;
+
+    /**
      * Register php-resque-Influxdb in php-resque.
      *
      * Register all callbacks in php-resque for when a job is run. This is
@@ -64,13 +71,13 @@ class InfluxDBLogger
     public static function register()
     {
         // Core php-resque events
-        \Resque_Event::listen('afterEnqueue', 'InfluxDBLogger::afterEnqueue');
-        \Resque_Event::listen('beforeFork', 'InfluxDBLogger::beforeFork');
-        \Resque_Event::listen('afterPerform', 'InfluxDBLogger::afterPerform');
-        \Resque_Event::listen('onFailure', 'InfluxDBLogger::onFailure');
+        \Resque_Event::listen('afterEnqueue', 'Resque\Logging\InfluxDBLogger::afterEnqueue');
+        \Resque_Event::listen('beforeFork', 'Resque\Logging\InfluxDBLogger::beforeFork');
+        \Resque_Event::listen('afterPerform', 'Resque\Logging\InfluxDBLogger::afterPerform');
+        \Resque_Event::listen('onFailure', 'Resque\Logging\InfluxDBLogger::onFailure');
 
         // Add support for php-resque-scheduler
-        \Resque_Event::listen('afterSchedule', 'ResqueInfluxDB::afterSchedule');
+        \Resque_Event::listen('afterSchedule', 'Resque\Logging\InfluxDBLogger::afterSchedule');
     }
 
     /**
@@ -89,6 +96,18 @@ class InfluxDBLogger
         self::$port     = $port;
         self::$user     = $username;
         self::$password = $password;
+    }
+
+    /**
+     * Set the InfluxDB Client driver.
+     *
+     * @param DriverInterface $driver InfluxDB HTTP driver.
+     *
+     * @return void
+     */
+    public static function setClient($driver)
+    {
+        self::$driver = $driver;
     }
 
     /**
@@ -215,7 +234,7 @@ class InfluxDBLogger
      *
      * @return Client Array containing host and port.
      */
-    private static function getInfluxDBHost()
+    private static function getInfluxDBClient()
     {
         $host     = self::$host;
         $port     = self::$port;
@@ -249,6 +268,10 @@ class InfluxDBLogger
 
         $client = new Client($host, $port, $user, $password);
 
+        if (!is_null(self::$driver)) {
+            $client->setDriver(self::$driver);
+        }
+
         return $client;
     }
 
@@ -259,7 +282,7 @@ class InfluxDBLogger
      */
     private static function getDB()
     {
-        $client = self::getInfluxDBHost();
+        $client = self::getInfluxDBClient();
 
         if (empty($client))
         {
