@@ -2,11 +2,11 @@
 /**
  * php-resque-InfluxDB
  *
- * @package     php-resque-influxdb
- * @author      Chris Boulton <chris@bigcommerce.com>
- * @author      Sean Molenaar <sean@m2mobi.com>
+ * @package         php-resque-influxdb
+ * @author          Chris Boulton <chris@bigcommerce.com>
+ * @author          Sean Molenaar <sean@m2mobi.com>
  * @copyright   (c) 2017 Sean Molenaar
- * @license     http://www.opensource.org/licenses/mit-license.php
+ * @license         http://www.opensource.org/licenses/mit-license.php
  */
 
 namespace Resque\Logging;
@@ -20,7 +20,7 @@ use InfluxDB\Point;
  */
 class InfluxDBLogger
 {
-    const INFLUXDB_TIMER   = 'ms';
+    const INFLUXDB_TIMER = 'ms';
     const INFLUXDB_COUNTER = 'c';
 
     /**
@@ -189,9 +189,9 @@ class InfluxDBLogger
                 'start_time'     => isset($job->influxDBStartTime) ? $job->influxDBStartTime : 'null',
             ],
             [
-                $job->payload['class'],
-                $job->queue,
-                'finished',
+                'class'  => $job->payload['class'],
+                'queue'  => $job->queue,
+                'status' => 'finished',
             ]);
     }
 
@@ -214,9 +214,9 @@ class InfluxDBLogger
                 'start_time'     => isset($job->influxDBStartTime) ? $job->influxDBStartTime : 'null',
             ],
             [
-                $job->payload['class'],
-                $job->queue,
-                'failed',
+                'class'  => $job->payload['class'],
+                'queue'  => $job->queue,
+                'status' => 'failed',
             ]
         );
     }
@@ -268,7 +268,8 @@ class InfluxDBLogger
 
         $client = new Client($host, $port, $user, $password);
 
-        if (!is_null(self::$driver)) {
+        if (!is_null(self::$driver))
+        {
             $client->setDriver(self::$driver);
         }
 
