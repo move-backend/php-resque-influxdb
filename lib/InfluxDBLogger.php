@@ -27,7 +27,13 @@ class InfluxDBLogger
      * Prefix to add to metrics submitted to InfluxDB.
      * @var string
      */
-    private static $name = 'resque';
+    private static $db_name = 'resque';
+
+    /**
+     * Measurement name in InfluxDB.
+     * @var string
+     */
+    private static $measurement_name = 'resque';
 
     /**
      * Hostname when connecting to InfluxDB.
@@ -119,7 +125,19 @@ class InfluxDBLogger
      */
     public static function setDB($db)
     {
-        self::$name = $db;
+        self::$db_name = $db;
+    }
+
+    /**
+     * Override the measurement name for metrics that are submitted to InfluxDB.
+     *
+     * @param string $name Name to use for measurements.
+     *
+     * @return void
+     */
+    public static function setMeasurementName($name)
+    {
+        self::$measurement_name = $name;
     }
 
     /**
@@ -290,7 +308,7 @@ class InfluxDBLogger
             return FALSE;
         }
 
-        $db = $client->selectDB(self::$name);
+        $db = $client->selectDB(self::$db_name);
 
         return $db;
     }
@@ -307,7 +325,7 @@ class InfluxDBLogger
     {
         $db = self::getDB();
 
-        $point = new Point('Resque');
+        $point = new Point(self::$measurement_name);
         $point->setFields($fields);
         $point->setTags($tags);
         $point->setTimestamp(exec('date +%s%N'));
