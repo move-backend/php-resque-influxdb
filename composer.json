@@ -1,0 +1,16 @@
+{
+    "name": "m2mobi/php-resque-influxdb",
+    "description": "Logging resque statistics to influxDB",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sean Molenaar",
+            "email": "sean@m2mobi.com"
+        }
+    ],
+    "require": {
+        "influxdb/influxdb-php": "^1.14",
+        "resque/php-resque": "^1.3"
+    }
+}
