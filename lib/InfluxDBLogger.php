@@ -149,7 +149,7 @@ class InfluxDBLogger
     /**
      * Add a set of tags to all measurements.
      *
-     * @param string $tags Tags to use.
+     * @param array $tags Tags to use.
      *
      * @return void
      */
