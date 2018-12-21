@@ -20,9 +20,6 @@ use InfluxDB\Point;
  */
 class InfluxDBLogger
 {
-    const INFLUXDB_TIMER = 'ms';
-    const INFLUXDB_COUNTER = 'c';
-
     /**
      * Prefix to add to metrics submitted to InfluxDB.
      * @var string
@@ -95,10 +92,10 @@ class InfluxDBLogger
     /**
      * Set the host/port combination of InfluxDB.
      *
-     * @param string $host     Hostname/IP of InfluxDB server.
-     * @param int    $port     Port InfluxDB is listening on.
-     * @param string $username Username for InfluxDB
-     * @param string $password Password for InfluxDB
+     * @param string  $host     Hostname/IP of InfluxDB server.
+     * @param integer $port     Port InfluxDB is listening on.
+     * @param string  $username Username for InfluxDB
+     * @param string  $password Password for InfluxDB
      *
      * @return void
      */
@@ -175,10 +172,10 @@ class InfluxDBLogger
     /**
      * Submit metrics for a queue and job whenever a job is scheduled in php-resque-scheduler.
      *
-     * @param \DateTime|int $at    Instance of PHP DateTime object or int of UNIX timestamp.
-     * @param string        $queue Name of the queue the job was created in.
-     * @param string        $class Class name of the job that was just created.
-     * @param array         $args  Arguments passed to the job.
+     * @param \DateTime|integer $at    Instance of PHP DateTime object or int of UNIX timestamp.
+     * @param string            $queue Name of the queue the job was created in.
+     * @param string            $class Class name of the job that was just created.
+     * @param array             $args  Arguments passed to the job.
      *
      * @return void
      */
@@ -218,12 +215,7 @@ class InfluxDBLogger
     public static function afterPerform(\Resque_Job $job)
     {
         $executionTime = microtime(TRUE) - $job->influxDBStartTime;
-        self::sendMetric(
-            [
-                'execution_time' => $executionTime,
-                'queue_time'     => isset($job->influxDBTimeInQueue) ? $job->influxDBTimeInQueue : 'null',
-                'start_time'     => isset($job->influxDBStartTime) ? $job->influxDBStartTime : 'null',
-            ],
+        self::sendMetric(self::getJobField($job, NULL),
             [
                 'class'  => $job->payload['class'],
                 'queue'  => $job->queue,
@@ -242,20 +234,44 @@ class InfluxDBLogger
     public static function onFailure(\Exception $e, \Resque_Job $job)
     {
         $executionTime = microtime(TRUE) - $job->influxDBStartTime;
-        self::sendMetric(
+        self::sendMetric(self::getJobField($job, $e),
             [
-                'error'          => $e->getMessage(),
-                'execution_time' => $executionTime,
-                'queue_time'     => isset($job->influxDBTimeInQueue) ? $job->influxDBTimeInQueue : 'null',
-                'start_time'     => isset($job->influxDBStartTime) ? $job->influxDBStartTime : 'null',
-            ],
-            [
-                'class'  => $job->payload['class'],
-                'queue'  => $job->queue,
-                'exception'  => get_class($e),
-                'status' => 'failed',
+                'class'     => $job->payload['class'],
+                'queue'     => $job->queue,
+                'exception' => get_class($e),
+                'status'    => 'failed',
             ]
         );
+    }
+
+    /**
+     * Get fields that need to be in influxDB.
+     *
+     * @param \Resque_Job $job Instance of Resque_Job for the job that failed.
+     * @param \Exception  $e   Exception thrown by the job.
+     *
+     * @return array Fields relevant for the job.
+     */
+    public static function getJobField(\Resque_Job $job, \Exception $e = NULL)
+    {
+        $fields = [ 'execution_time' => $executionTime ];
+
+        if (!is_null($e))
+        {
+            $fields['error'] = $e->getMessage();
+        }
+
+        if (isset($job->influxDBTimeInQueue))
+        {
+            $fields['queue_time'] = $job->influxDBTimeInQueue;
+        }
+
+        if (isset($job->influxDBStartTime))
+        {
+            $fields['start_time'] = $job->influxDBStartTime;
+        }
+
+        return $fields;
     }
 
     /**
@@ -316,7 +332,7 @@ class InfluxDBLogger
     /**
      * Get a database object
      *
-     * @return bool|\InfluxDB\Database
+     * @return boolean|\InfluxDB\Database
      */
     private static function getDB()
     {
