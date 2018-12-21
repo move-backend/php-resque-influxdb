@@ -214,7 +214,6 @@ class InfluxDBLogger
      */
     public static function afterPerform(\Resque_Job $job)
     {
-        $executionTime = microtime(TRUE) - $job->influxDBStartTime;
         self::sendMetric(self::getJobField($job, NULL),
             [
                 'class'  => $job->payload['class'],
@@ -233,7 +232,6 @@ class InfluxDBLogger
      */
     public static function onFailure(\Exception $e, \Resque_Job $job)
     {
-        $executionTime = microtime(TRUE) - $job->influxDBStartTime;
         self::sendMetric(self::getJobField($job, $e),
             [
                 'class'     => $job->payload['class'],
@@ -254,6 +252,7 @@ class InfluxDBLogger
      */
     public static function getJobField(\Resque_Job $job, \Exception $e = NULL)
     {
+        $executionTime = microtime(TRUE) - $job->influxDBStartTime;
         $fields = [ 'execution_time' => $executionTime ];
 
         if (!is_null($e))
