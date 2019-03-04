@@ -13,6 +13,7 @@ namespace Resque\Logging;
 
 use InfluxDB\Client;
 use InfluxDB\Driver\DriverInterface;
+use InfluxDB\Exception;
 use InfluxDB\Point;
 
 /**
@@ -67,6 +68,18 @@ class InfluxDBLogger
      * @var DriverInterface|null
      */
     private static $driver = NULL;
+
+    /**
+     * Allow InfluxDB to fail without failing resque.
+     * @var boolean
+     */
+    private static $benevolent = TRUE;
+
+    /**
+     * File to log InfluxDB errors to.
+     * @var string
+     */
+    private static $logfile = NULL;
 
     /**
      * Register php-resque-Influxdb in php-resque.
@@ -129,6 +142,30 @@ class InfluxDBLogger
     public static function setDB($db)
     {
         self::$db_name = $db;
+    }
+
+    /**
+     * Allow InfluxDB to fail without failing resque.
+     *
+     * @param boolean $benevolent If failures should be allowed.
+     *
+     * @return void
+     */
+    public static function isBenevolent($benevolent)
+    {
+        self::$benevolent = $benevolent;
+    }
+
+    /**
+     * File to log InfluxDB errors to.
+     *
+     * @param string $file Log file.
+     *
+     * @return void
+     */
+    public static function logfile($file)
+    {
+        self::$logfile = $file;
     }
 
     /**
@@ -353,6 +390,8 @@ class InfluxDBLogger
      * @param array $fields Key=>Value pair to indicate fields
      * @param array $tags   Array of tags to submit
      *
+     * @throws Exception InfluxDB exception if the logging failed and $benevolent is false.
+     *
      * @return boolean True if the metric was submitted successfully.
      */
     private static function sendMetric($fields, $tags)
@@ -361,12 +400,25 @@ class InfluxDBLogger
 
         $tags += self::$default_tags;
 
-        $point = new Point(self::$measurement_name);
-        $point->setFields($fields);
-        $point->setTags($tags);
-        $point->setTimestamp(exec('date +%s%N'));
+        try
+        {
+            $point = new Point(self::$measurement_name);
+            $point->setFields($fields);
+            $point->setTags($tags);
+            $point->setTimestamp(exec('date +%s%N'));
 
-        $db->writePoints([$point]);
+            $db->writePoints([$point]);
+        } catch (Exception $exception)
+        {
+            if (!is_null(self::$logfile)) {
+                $timestamp = date('c');
+                file_put_contents(self::$logfile, "[$timestamp] " . $exception->getMessage(), FILE_APPEND);
+            }
+
+            if (self::$benevolent === FALSE) {
+                throw $exception;
+            }
+        }
 
         return TRUE;
     }

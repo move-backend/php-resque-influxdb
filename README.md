@@ -21,6 +21,29 @@ To start tracking your jobs with InfluxDB, all you need to do is include
 `InfluxDBLogger.php` in your project with PSR-4. The namespace is `\Resque\Logging`.
 After this you can run `\Resque\Logging\InfluxDBLogger::register()`
 
+
+## Metrics
+
+php-resque-influxdb send all metrics it generates to the DB `resque`. You can
+override this behavior if desired:
+
+	\Resque\Logging\InfluxDBLogger::register();
+	\Resque\Logging\InfluxDBLogger::setDB('resque.production');
+	
+Metrics that are send have the following fields for a successful job:
+
+    'execution_time' => $executionTime,
+    'queue_time'     => $job->influxDBTimeInQueue OR 'null',
+    'start_time'     => $job->influxDBStartTime  OR 'null',
+	
+and add the following field for an unsuccessful job:
+
+    'error' => $e->getMessage()
+
+And feature the job class, queue and result as tags for the metric.
+
+## Settings
+
 ### InfluxDB Connection Details
 
 php-resque-scheduler will automatically check for the following environment
@@ -49,25 +72,31 @@ php-resque-influxdb where InfluxDB is located:
 	\Resque\Logging\InfluxDBLogger::setHost($host, $port);
 
 
-## Metrics
+### Logging settings functions
 
-php-resque-influxdb send all metrics it generates to the DB `resque`. You can
-override this behavior if desired:
+Set the connection driver. Needs to adhere to `InfluxDB\Driver\DriverInterface`, defaults to `Guzzle`.
 
-	\Resque\Logging\InfluxDBLogger::register();
-	\Resque\Logging\InfluxDBLogger::setDB('resque.production');
-	
-Metrics that are send have the following fields for a successful job:
+    setDriver($driver)
 
-    'execution_time' => $executionTime,
-    'queue_time'     => $job->influxDBTimeInQueue OR 'null',
-    'start_time'     => $job->influxDBStartTime  OR 'null',
-	
-and add the following field for an unsuccessful job:
+Set the name of the database. Defaults to `resque`.
 
-    'error' => $e->getMessage()
+    setDB($db)
 
-And feature the job class, queue and result as tags for the metric.
+Allow InfluxDB connections to fail without failing the resque call. Defaults to `TRUE`.
+
+    isBenevolent($benevolent)
+
+Log InfluxDB failures. Disabled by default.
+
+    logfile($file)
+
+Set the name of the measurement. Defaults to `resque`.
+
+    setMeasurementName($name)
+
+Set the tags present on every report. Empty by default.
+
+    setDefaultTags($tags)
 
 ## Contributors ##
 
