@@ -5,4 +5,7 @@
  * @author Sean Molenaar <sean@m2mobi.com>
  */
 
-require_once '../vendor/autoload.php';
+$base = __DIR__ . '/..';
+
+// Include libraries
+require_once $base . '/vendor/autoload.php';
