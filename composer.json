@@ -11,9 +11,14 @@
     ],
     "require": {
         "influxdb/influxdb-php": "^1.14",
-        "resque/php-resque": "^1.3"
+        "resque/php-resque": "^1.3",
+        "psr/log": "^1.1",
+        "php": ">=7.1"
     },
     "autoload": {
-        "psr-4": {"\\Resque\\Logging\\": "lib/"}
+        "psr-4": {"Resque\\Logging\\": "lib/"}
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.0"
     }
 }

@@ -9,12 +9,15 @@
  * @license         http://www.opensource.org/licenses/mit-license.php
  */
 
+declare(strict_types=1);
+
 namespace Resque\Logging;
 
 use InfluxDB\Client;
+use InfluxDB\Database;
 use InfluxDB\Driver\DriverInterface;
-use InfluxDB\Exception;
 use InfluxDB\Point;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class ResqueInfluxDB
@@ -25,61 +28,55 @@ class InfluxDBLogger
      * Prefix to add to metrics submitted to InfluxDB.
      * @var string
      */
-    private static $db_name = 'resque';
+    protected static $db_name = 'resque';
 
     /**
      * Measurement name in InfluxDB.
      * @var string
      */
-    private static $measurement_name = 'resque';
+    protected static $measurement_name = 'resque';
 
     /**
      * Default measurement tags.
      * @var array
      */
-    private static $default_tags = [];
+    protected static $default_tags = [];
 
     /**
      * Hostname when connecting to InfluxDB.
      * @var string
      */
-    private static $host = 'localhost';
+    protected static $host = 'localhost';
 
     /**
      * Port InfluxDB is running on.
      * @var int
      */
-    private static $port = 8086;
+    protected static $port = 8086;
 
     /**
      * Port InfluxDB is running on.
      * @var int
      */
-    private static $user = '';
+    protected static $user = '';
 
     /**
      * Port InfluxDB is running on.
      * @var int
      */
-    private static $password = '';
+    protected static $password = '';
 
     /**
      * InfluxDB request driver.
      * @var DriverInterface|null
      */
-    private static $driver = NULL;
+    protected static $driver = NULL;
 
     /**
-     * Allow InfluxDB to fail without failing resque.
-     * @var boolean
+     * Logger.
+     * @var LoggerInterface|null
      */
-    private static $benevolent = TRUE;
-
-    /**
-     * File to log InfluxDB errors to.
-     * @var string
-     */
-    private static $logfile = NULL;
+    private static $logger = NULL;
 
     /**
      * Register php-resque-Influxdb in php-resque.
@@ -90,7 +87,7 @@ class InfluxDBLogger
      *
      * @return void
      */
-    public static function register()
+    public static function register(): void
     {
         // Core php-resque events
         \Resque_Event::listen('afterEnqueue', 'Resque\Logging\InfluxDBLogger::afterEnqueue');
@@ -112,7 +109,7 @@ class InfluxDBLogger
      *
      * @return void
      */
-    public static function setHost($host, $port, $username = '', $password = '')
+    public static function setHost(string $host, int $port, string $username = '', string $password = ''): void
     {
         self::$host     = $host;
         self::$port     = $port;
@@ -127,9 +124,21 @@ class InfluxDBLogger
      *
      * @return void
      */
-    public static function setDriver($driver)
+    public static function setDriver(DriverInterface $driver): void
     {
         self::$driver = $driver;
+    }
+
+    /**
+     * Set the Logger.
+     *
+     * @param LoggerInterface $logger Logger in case of failure.
+     *
+     * @return void
+     */
+    public static function setLogger(LoggerInterface $logger): void
+    {
+        self::$logger = $logger;
     }
 
     /**
@@ -139,33 +148,9 @@ class InfluxDBLogger
      *
      * @return void
      */
-    public static function setDB($db)
+    public static function setDB(string $db): void
     {
         self::$db_name = $db;
-    }
-
-    /**
-     * Allow InfluxDB to fail without failing resque.
-     *
-     * @param boolean $benevolent If failures should be allowed.
-     *
-     * @return void
-     */
-    public static function isBenevolent($benevolent)
-    {
-        self::$benevolent = $benevolent;
-    }
-
-    /**
-     * File to log InfluxDB errors to.
-     *
-     * @param string $file Log file.
-     *
-     * @return void
-     */
-    public static function logfile($file)
-    {
-        self::$logfile = $file;
     }
 
     /**
@@ -175,7 +160,7 @@ class InfluxDBLogger
      *
      * @return void
      */
-    public static function setMeasurementName($name)
+    public static function setMeasurementName(string $name): void
     {
         self::$measurement_name = $name;
     }
@@ -187,9 +172,19 @@ class InfluxDBLogger
      *
      * @return void
      */
-    public static function setDefaultTags($tags)
+    public static function setDefaultTags(array $tags): void
     {
         self::$default_tags = $tags;
+    }
+
+    /**
+     * Get a microtime timestamp.
+     *
+     * @return float
+     */
+    protected static function timestamp(): float
+    {
+        return microtime(TRUE);
     }
 
     /**
@@ -201,7 +196,7 @@ class InfluxDBLogger
      *
      * @return void
      */
-    public static function afterEnqueue($class, $args, $queue)
+    public static function afterEnqueue(string $class, array $args, string $queue): void
     {
         //NO-OP
     }
@@ -216,7 +211,7 @@ class InfluxDBLogger
      *
      * @return void
      */
-    public static function afterSchedule($at, $queue, $class, $args)
+    public static function afterSchedule($at, string $queue, string $class, array $args): void
     {
         //NO-OP
     }
@@ -232,13 +227,13 @@ class InfluxDBLogger
      *
      * @return void
      */
-    public static function beforeFork(\Resque_Job $job)
+    public static function beforeFork(\Resque_Job $job): void
     {
-        $job->influxDBStartTime = microtime(TRUE);
+        $job->influxDBStartTime = static::timestamp();
 
         if (isset($job->payload['queue_time']))
         {
-            $job->influxDBTimeInQueue = microtime(TRUE) - $job->payload['queue_time'];
+            $job->influxDBTimeInQueue = $job->influxDBStartTime - $job->payload['queue_time'];
         }
     }
 
@@ -249,14 +244,14 @@ class InfluxDBLogger
      *
      * @return void
      */
-    public static function afterPerform(\Resque_Job $job)
+    public static function afterPerform(\Resque_Job $job): void
     {
         self::sendMetric(self::getJobField($job, NULL),
-            [
-                'class'  => $job->payload['class'],
-                'queue'  => $job->queue,
-                'status' => 'finished',
-            ]);
+                         [
+                             'class'  => $job->payload['class'],
+                             'queue'  => $job->queue,
+                             'status' => 'finished',
+                         ]);
     }
 
     /**
@@ -267,15 +262,15 @@ class InfluxDBLogger
      *
      * @return void
      */
-    public static function onFailure(\Exception $e, \Resque_Job $job)
+    public static function onFailure(\Exception $e, \Resque_Job $job): void
     {
         self::sendMetric(self::getJobField($job, $e),
-            [
-                'class'     => $job->payload['class'],
-                'queue'     => $job->queue,
-                'exception' => get_class($e),
-                'status'    => 'failed',
-            ]
+                         [
+                             'class'     => $job->payload['class'],
+                             'queue'     => $job->queue,
+                             'exception' => get_class($e),
+                             'status'    => 'failed',
+                         ]
         );
     }
 
@@ -287,10 +282,10 @@ class InfluxDBLogger
      *
      * @return array Fields relevant for the job.
      */
-    public static function getJobField(\Resque_Job $job, \Exception $e = NULL)
+    private static function getJobField(\Resque_Job $job, \Exception $e = NULL): array
     {
-        $executionTime = microtime(TRUE) - $job->influxDBStartTime;
-        $fields = [ 'execution_time' => $executionTime ];
+        $executionTime = static::timestamp() - $job->influxDBStartTime;
+        $fields        = ['execution_time' => $executionTime];
 
         if (!is_null($e))
         {
@@ -311,7 +306,7 @@ class InfluxDBLogger
     }
 
     /**
-     * Return a tuple containing the InfluxDB host and port to submit metrics to.
+     * Return a Client with the InfluxDB host and port to submit metrics to.
      *
      * Looks for environment variable INFLUXDB_HOST before resorting to the host/port
      * combination passed to `register`, or defaulting to localhost.
@@ -321,9 +316,9 @@ class InfluxDBLogger
      * If the host variable includes a single colon, the first part of the string
      * is used for the host, and the second part for the port.
      *
-     * @return Client Array containing host and port.
+     * @return \InfluxDB\Client Prepared InfluxDB client.
      */
-    private static function getInfluxDBClient()
+    private static function getInfluxDBClient(): Client
     {
         $host     = self::$host;
         $port     = self::$port;
@@ -368,18 +363,12 @@ class InfluxDBLogger
     /**
      * Get a database object
      *
-     * @return boolean|\InfluxDB\Database
+     * @return \InfluxDB\Database
      */
-    private static function getDB()
+    private static function getDB(): Database
     {
         $client = self::getInfluxDBClient();
-
-        if (empty($client))
-        {
-            return FALSE;
-        }
-
-        $db = $client->selectDB(self::$db_name);
+        $db     = $client->selectDB(self::$db_name);
 
         return $db;
     }
@@ -390,14 +379,11 @@ class InfluxDBLogger
      * @param array $fields Key=>Value pair to indicate fields
      * @param array $tags   Array of tags to submit
      *
-     * @throws Exception InfluxDB exception if the logging failed and $benevolent is false.
-     *
      * @return boolean True if the metric was submitted successfully.
      */
-    private static function sendMetric($fields, $tags)
+    private static function sendMetric(array $fields, array $tags): bool
     {
-        $db = self::getDB();
-
+        $db    = self::getDB();
         $tags += self::$default_tags;
 
         try
@@ -408,16 +394,15 @@ class InfluxDBLogger
             $point->setTimestamp(exec('date +%s%N'));
 
             $db->writePoints([$point]);
-        } catch (Exception $exception)
+        }
+        catch (\InfluxDB\Exception $exception)
         {
-            if (!is_null(self::$logfile)) {
-                $timestamp = date('c');
-                file_put_contents(self::$logfile, "[$timestamp] " . $exception->getMessage(), FILE_APPEND);
+            if (!is_null(self::$logger))
+            {
+                self::$logger->error($exception->getMessage());
             }
 
-            if (self::$benevolent === FALSE) {
-                throw $exception;
-            }
+            return FALSE;
         }
 
         return TRUE;

@@ -1,5 +1,6 @@
 php-resque-influxdb: PHP Resque InfluxDB
 ==========================================
+[![build status](https://api.travis-ci.org/M2Mobi/php-resque-influxdb.svg)](https://travis-ci.org/M2Mobi/php-resque-influxdb)
 
 php-resque-influxdb implements InfluxDB metric tracking into php-resque.
 
