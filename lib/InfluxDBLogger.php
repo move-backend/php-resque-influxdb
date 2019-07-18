@@ -257,12 +257,12 @@ class InfluxDBLogger
     /**
      * Submit metrics for a queue and job whenever a job fails to run.
      *
-     * @param \Exception  $e   Exception thrown by the job.
+     * @param \Throwable  $e   Exception thrown by the job.
      * @param \Resque_Job $job Instance of Resque_Job for the job that failed.
      *
      * @return void
      */
-    public static function onFailure(\Exception $e, \Resque_Job $job): void
+    public static function onFailure(\Throwable $e, \Resque_Job $job): void
     {
         self::sendMetric(self::getJobField($job, $e),
                          [
@@ -278,11 +278,11 @@ class InfluxDBLogger
      * Get fields that need to be in influxDB.
      *
      * @param \Resque_Job $job Instance of Resque_Job for the job that failed.
-     * @param \Exception  $e   Exception thrown by the job.
+     * @param \Throwable  $e   Exception thrown by the job.
      *
      * @return array Fields relevant for the job.
      */
-    private static function getJobField(\Resque_Job $job, \Exception $e = NULL): array
+    private static function getJobField(\Resque_Job $job, \Throwable $e = NULL): array
     {
         $executionTime = static::timestamp() - $job->influxDBStartTime;
         $fields        = ['execution_time' => $executionTime];
