@@ -17,7 +17,8 @@ before_script:
   - travis_retry composer install --no-interaction --prefer-source --dev
 
 script:
-  - phpunit --configuration tests/phpunit.xml --coverage-clover=coverage.xml
+  - ./vendor/bin/phpunit --configuration tests/phpunit.xml --coverage-clover=coverage.xml
+  - ./vendor/bin/phpstan analyse -c tests/phpstan.neon.dist --no-progress --no-interaction --level=4 lib/
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
