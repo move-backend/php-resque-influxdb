@@ -9,7 +9,6 @@
             verbose="true">
     <php>
         <ini name="zend.enable_gc" value="0" />
-        <ini name="xdebug.collect_params" value="0" />
         <env name="INFLUXDB_HOST" value="m2mobi.com:500" force="true" />
         <env name="INFLUXDB_PORT" value="6000" force="true" />
         <env name="INFLUXDB_USERNAME" value="envUser" force="true" />

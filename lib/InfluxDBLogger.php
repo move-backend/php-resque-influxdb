@@ -1,4 +1,5 @@
 <?php
+
 /**
  * php-resque-InfluxDB
  *
@@ -70,13 +71,13 @@ class InfluxDBLogger
      * InfluxDB request driver.
      * @var DriverInterface|null
      */
-    protected static $driver = NULL;
+    protected static $driver = null;
 
     /**
      * Logger.
      * @var LoggerInterface|null
      */
-    private static $logger = NULL;
+    private static $logger = null;
 
     /**
      * Register php-resque-Influxdb in php-resque.
@@ -184,7 +185,7 @@ class InfluxDBLogger
      */
     protected static function timestamp(): float
     {
-        return microtime(TRUE);
+        return microtime(true);
     }
 
     /**
@@ -231,8 +232,7 @@ class InfluxDBLogger
     {
         $job->influxDBStartTime = static::timestamp();
 
-        if (isset($job->payload['queue_time']))
-        {
+        if (isset($job->payload['queue_time'])) {
             $job->influxDBTimeInQueue = $job->influxDBStartTime - $job->payload['queue_time'];
         }
     }
@@ -246,12 +246,14 @@ class InfluxDBLogger
      */
     public static function afterPerform(\Resque_Job $job): void
     {
-        self::sendMetric(self::getJobField($job, NULL),
-                         [
+        self::sendMetric(
+            self::getJobField($job, null),
+            [
                              'class'  => $job->payload['class'],
                              'queue'  => $job->queue,
                              'status' => 'finished',
-                         ]);
+            ]
+        );
     }
 
     /**
@@ -264,8 +266,9 @@ class InfluxDBLogger
      */
     public static function onFailure(\Throwable $e, \Resque_Job $job): void
     {
-        self::sendMetric(self::getJobField($job, $e),
-                         [
+        self::sendMetric(
+            self::getJobField($job, $e),
+            [
                              'class'     => $job->payload['class'],
                              'queue'     => $job->queue,
                              'exception' => get_class($e),
@@ -282,23 +285,20 @@ class InfluxDBLogger
      *
      * @return array<string, mixed> Fields relevant for the job.
      */
-    private static function getJobField(\Resque_Job $job, \Throwable $e = NULL): array
+    private static function getJobField(\Resque_Job $job, \Throwable $e = null): array
     {
         $executionTime = static::timestamp() - $job->influxDBStartTime;
         $fields        = ['execution_time' => $executionTime];
 
-        if (!is_null($e))
-        {
+        if (!is_null($e)) {
             $fields['error'] = $e->getMessage();
         }
 
-        if (isset($job->influxDBTimeInQueue))
-        {
+        if (isset($job->influxDBTimeInQueue)) {
             $fields['queue_time'] = $job->influxDBTimeInQueue;
         }
 
-        if (isset($job->influxDBStartTime))
-        {
+        if (isset($job->influxDBStartTime)) {
             $fields['start_time'] = $job->influxDBStartTime;
         }
 
@@ -325,35 +325,29 @@ class InfluxDBLogger
         $user     = self::$user;
         $password = self::$password;
 
-        if (!empty($_ENV['INFLUXDB_HOST']))
-        {
+        if (!empty($_ENV['INFLUXDB_HOST'])) {
             $host = $_ENV['INFLUXDB_HOST'];
         }
 
-        if (!empty($_ENV['INFLUXDB_PORT']))
-        {
+        if (!empty($_ENV['INFLUXDB_PORT'])) {
             $port = $_ENV['INFLUXDB_PORT'];
         }
 
-        if (!empty($_ENV['INFLUXDB_USERNAME']))
-        {
+        if (!empty($_ENV['INFLUXDB_USERNAME'])) {
             $user = $_ENV['INFLUXDB_USERNAME'];
         }
 
-        if (!empty($_ENV['INFLUXDB_PASSWORD']))
-        {
+        if (!empty($_ENV['INFLUXDB_PASSWORD'])) {
             $password = $_ENV['INFLUXDB_PASSWORD'];
         }
 
-        if (substr_count($host, ':') == 1)
-        {
+        if (substr_count($host, ':') == 1) {
             list($host, $port) = explode(':', $host);
         }
 
         $client = new Client($host, $port, $user, $password);
 
-        if (!is_null(self::$driver))
-        {
+        if (!is_null(self::$driver)) {
             $client->setDriver(self::$driver);
         }
 
@@ -386,26 +380,21 @@ class InfluxDBLogger
         $db    = self::getDB();
         $tags += self::$default_tags;
 
-        try
-        {
+        try {
             $point = new Point(self::$measurement_name);
             $point->setFields($fields);
             $point->setTags($tags);
             $point->setTimestamp(exec('date +%s%N'));
 
             $db->writePoints([$point]);
-        }
-        catch (\InfluxDB\Exception $exception)
-        {
-            if (!is_null(self::$logger))
-            {
+        } catch (\InfluxDB\Exception $exception) {
+            if (!is_null(self::$logger)) {
                 self::$logger->error($exception->getMessage());
             }
 
-            return FALSE;
+            return false;
         }
 
-        return TRUE;
+        return true;
     }
-
 }

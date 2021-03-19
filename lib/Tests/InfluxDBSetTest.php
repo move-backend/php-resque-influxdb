@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file contains the InfluxDBSetTest.php
  *
@@ -74,7 +75,7 @@ class InfluxDBSetTest extends TestCase
     public function testSetDriver(): void
     {
         InfluxDBLogger::setDriver($this->driver);
-        $prop = $this->reflection->getStaticProperties()['driver'] ?? NULL;
+        $prop = $this->reflection->getStaticProperties()['driver'] ?? null;
         $this->assertSame($this->driver, $prop);
     }
 
@@ -86,7 +87,7 @@ class InfluxDBSetTest extends TestCase
     public function testSetLogger(): void
     {
         InfluxDBLogger::setLogger($this->logger);
-        $prop = $this->reflection->getStaticProperties()['logger'] ?? NULL;
+        $prop = $this->reflection->getStaticProperties()['logger'] ?? null;
         $this->assertSame($this->logger, $prop);
     }
 
@@ -99,16 +100,16 @@ class InfluxDBSetTest extends TestCase
     {
         InfluxDBLogger::setHost('some.host', 5400, 'username', 'password');
 
-        $prop = $this->reflection->getStaticProperties()['host'] ?? NULL;
+        $prop = $this->reflection->getStaticProperties()['host'] ?? null;
         $this->assertSame('some.host', $prop);
 
-        $prop = $this->reflection->getStaticProperties()['port'] ?? NULL;
+        $prop = $this->reflection->getStaticProperties()['port'] ?? null;
         $this->assertSame(5400, $prop);
 
-        $prop = $this->reflection->getStaticProperties()['user'] ?? NULL;
+        $prop = $this->reflection->getStaticProperties()['user'] ?? null;
         $this->assertSame('username', $prop);
 
-        $prop = $this->reflection->getStaticProperties()['password'] ?? NULL;
+        $prop = $this->reflection->getStaticProperties()['password'] ?? null;
         $this->assertSame('password', $prop);
     }
 
@@ -121,7 +122,7 @@ class InfluxDBSetTest extends TestCase
     {
         InfluxDBLogger::setDB('somedb');
 
-        $prop = $this->reflection->getStaticProperties()['db_name'] ?? NULL;
+        $prop = $this->reflection->getStaticProperties()['db_name'] ?? null;
         $this->assertSame('somedb', $prop);
     }
 
@@ -134,7 +135,7 @@ class InfluxDBSetTest extends TestCase
     {
         InfluxDBLogger::setMeasurementName('some');
 
-        $prop = $this->reflection->getStaticProperties()['measurement_name'] ?? NULL;
+        $prop = $this->reflection->getStaticProperties()['measurement_name'] ?? null;
         $this->assertSame('some', $prop);
     }
 
@@ -147,7 +148,7 @@ class InfluxDBSetTest extends TestCase
     {
         InfluxDBLogger::setDefaultTags(['tag' => 'value']);
 
-        $prop = $this->reflection->getStaticProperties()['default_tags'] ?? NULL;
+        $prop = $this->reflection->getStaticProperties()['default_tags'] ?? null;
         $this->assertSame(['tag' => 'value'], $prop);
     }
 

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file contains the InfluxDBPerformTest.php
  *
@@ -145,7 +146,8 @@ class InfluxDBPerformTest extends TestCase
                          'auth'     => ['envUser', 'envPass'],
                      ]);
 
-        $query = 'resque,class=SomeClass,queue=queue,status=finished execution_time=863,queue_time=1000i,start_time=1552481660i 1552482605N';
+        $tags = 'class=SomeClass,queue=queue,status=finished';
+        $query = "resque,$tags execution_time=863,queue_time=1000i,start_time=1552481660i 1552482605N";
         $this->driver->expects($this->exactly(1))
                      ->method('write')
                      ->with($query);
@@ -178,7 +180,8 @@ class InfluxDBPerformTest extends TestCase
                          'auth'     => ['envUser', 'envPass'],
                      ]);
 
-        $query = 'resque,class=SomeClass,queue=queue,status=finished execution_time=863,queue_time=1000i,start_time=1552481660i 1552482605N';
+        $tags = 'class=SomeClass,queue=queue,status=finished';
+        $query = "resque,$tags execution_time=863,queue_time=1000i,start_time=1552481660i 1552482605N";
         $this->driver->expects($this->exactly(1))
                      ->method('write')
                      ->with($query);
@@ -261,10 +264,15 @@ class InfluxDBPerformTest extends TestCase
 
         InfluxDBLogger::onFailure($exception, $job);
     }
-
 }
 
 namespace Resque\Logging;
 
-function microtime($get_as_float){ return 1552482523; }
-function exec($cmd) { return '1552482605N'; }
+function microtime($get_as_float)
+{
+    return 1552482523;
+}
+function exec($cmd)
+{
+    return '1552482605N';
+}
