@@ -38,7 +38,7 @@ class InfluxDBLogger
 
     /**
      * Default measurement tags.
-     * @var array
+     * @var array<string, string>
      */
     protected static $default_tags = [];
 
@@ -55,14 +55,14 @@ class InfluxDBLogger
     protected static $port = 8086;
 
     /**
-     * Port InfluxDB is running on.
-     * @var int
+     * The InfluxDB user.
+     * @var string
      */
     protected static $user = '';
 
     /**
-     * Port InfluxDB is running on.
-     * @var int
+     * Password for the InfluxDB user.
+     * @var string
      */
     protected static $password = '';
 
@@ -168,7 +168,7 @@ class InfluxDBLogger
     /**
      * Add a set of tags to all measurements.
      *
-     * @param array $tags Tags to use.
+     * @param array<string,string> $tags Tags to use.
      *
      * @return void
      */
@@ -190,9 +190,9 @@ class InfluxDBLogger
     /**
      * Submit metrics for a queue and job whenever a job is pushed to a queue.
      *
-     * @param string $class Class name of the job that was just created.
-     * @param array  $args  Arguments passed to the job.
-     * @param string $queue Name of the queue the job was created in.
+     * @param string       $class Class name of the job that was just created.
+     * @param array<mixed> $args  Arguments passed to the job.
+     * @param string       $queue Name of the queue the job was created in.
      *
      * @return void
      */
@@ -207,7 +207,7 @@ class InfluxDBLogger
      * @param \DateTime|integer $at    Instance of PHP DateTime object or int of UNIX timestamp.
      * @param string            $queue Name of the queue the job was created in.
      * @param string            $class Class name of the job that was just created.
-     * @param array             $args  Arguments passed to the job.
+     * @param array<mixed>      $args  Arguments passed to the job.
      *
      * @return void
      */
@@ -280,7 +280,7 @@ class InfluxDBLogger
      * @param \Resque_Job $job Instance of Resque_Job for the job that failed.
      * @param \Throwable  $e   Exception thrown by the job.
      *
-     * @return array Fields relevant for the job.
+     * @return array<string, mixed> Fields relevant for the job.
      */
     private static function getJobField(\Resque_Job $job, \Throwable $e = NULL): array
     {
@@ -376,10 +376,10 @@ class InfluxDBLogger
     /**
      * Submit a metric of the given type, name and value to InfluxDB.
      *
-     * @param array $fields Key=>Value pair to indicate fields
-     * @param array $tags   Array of tags to submit
+     * @param array<string,mixed> $fields Key=>Value pair to indicate fields
+     * @param array<string,string> $tags   Array of tags to submit
      *
-     * @return boolean True if the metric was submitted successfully.
+     * @return bool True if the metric was submitted successfully.
      */
     private static function sendMetric(array $fields, array $tags): bool
     {
