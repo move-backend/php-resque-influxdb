@@ -5,10 +5,10 @@ jobs:
   php:
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.experimental }}
-    name: "PHP-${{ matrix.php-versions }}: CS/PHPStan/Sample"
+    name: "PHP-${{ matrix.php-versions }}: CS/PHPStan/PHPUnit"
     strategy:
       matrix:
-        php-versions: ['7.2', '7.3', '7.4']
+        php-versions: ['7.3', '7.4']
         experimental: [false]
         include:
           - php-versions: 8.0
