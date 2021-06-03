@@ -164,6 +164,40 @@ class InfluxDBPerformTest extends TestCase
     }
 
     /**
+     * Test afterPerform setting values based on payload.
+     *
+     * @covers \Resque\Logging\InfluxDBLogger::afterPerform
+     */
+    public function testAfterPerformWithRetentionPolicy(): void
+    {
+        $this->driver->expects($this->exactly(1))
+                     ->method('setParameters')
+                     ->with([
+                         'url'      => 'write?db=resque&precision=n&rp=autogen',
+                         'database' => 'resque',
+                         'method'   => 'post',
+                         'auth'     => ['envUser', 'envPass'],
+                     ]);
+
+        $query = 'resque,class=SomeClass,queue=queue,status=finished execution_time=863,queue_time=1000i,start_time=1552481660i 1552482605N';
+        $this->driver->expects($this->exactly(1))
+                     ->method('write')
+                     ->with($query);
+
+        $job = new \Resque_Job('queue', [
+            'queue_time' => 1000,
+            'class'      => 'SomeClass',
+        ]);
+
+        $job->influxDBTimeInQueue = 1000;
+        $job->influxDBStartTime   = 1552481660;
+
+        InfluxDBLogger::setRetentionPolicy('autogen');
+
+        InfluxDBLogger::afterPerform($job);
+    }
+
+    /**
      * Test afterPerform using environment for client.
      *
      * @covers \Resque\Logging\InfluxDBLogger::afterPerform

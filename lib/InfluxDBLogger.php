@@ -38,6 +38,12 @@ class InfluxDBLogger
     protected static $measurement_name = 'resque';
 
     /**
+     * Prefix to add to metrics submitted to InfluxDB.
+     * @var string
+     */
+    protected static $retention_policy_name = NULL;
+
+    /**
      * Default measurement tags.
      * @var array<string, string>
      */
@@ -152,6 +158,18 @@ class InfluxDBLogger
     public static function setDB(string $db): void
     {
         self::$db_name = $db;
+    }
+
+    /**
+     * Override the retention policy for metrics that are submitted to InfluxDB.
+     *
+     * @param string $retention_policy Retention policy to use for metrics.
+     *
+     * @return void
+     */
+    public static function setRetentionPolicy(string $retention_policy): void
+    {
+        self::$retention_policy_name = $retention_policy;
     }
 
     /**
@@ -386,7 +404,7 @@ class InfluxDBLogger
             $point->setTags($tags);
             $point->setTimestamp(exec('date +%s%N'));
 
-            $db->writePoints([$point]);
+            $db->writePoints([$point], \InfluxDB\Database::PRECISION_NANOSECONDS, self::$retention_policy_name);
         } catch (\InfluxDB\Exception $exception) {
             if (!is_null(self::$logger)) {
                 self::$logger->error($exception->getMessage());

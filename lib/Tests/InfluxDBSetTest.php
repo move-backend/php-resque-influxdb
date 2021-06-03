@@ -127,6 +127,19 @@ class InfluxDBSetTest extends TestCase
     }
 
     /**
+     * Test if the retention policy is set correctly.
+     *
+     * @covers \Resque\Logging\InfluxDBLogger::setRetentionPolicy
+     */
+    public function testSetRetentionPolicy(): void
+    {
+        InfluxDBLogger::setRetentionPolicy('autogen');
+
+        $prop = $this->reflection->getStaticProperties()['retention_policy_name'] ?? NULL;
+        $this->assertSame('autogen', $prop);
+    }
+
+    /**
      * Test if the name is set correctly.
      *
      * @covers \Resque\Logging\InfluxDBLogger::setMeasurementName
