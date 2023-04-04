@@ -2,3 +2,4 @@
 /tests/*.cache
 decomposer.autoload.inc.php
 decomposer.diffnotes.md
+composer.lock
