@@ -135,7 +135,7 @@ class InfluxDBSetTest extends TestCase
     {
         InfluxDBLogger::setRetentionPolicy('autogen');
 
-        $prop = $this->reflection->getStaticProperties()['retention_policy_name'] ?? NULL;
+        $prop = $this->reflection->getStaticProperties()['retention_policy_name'] ?? null;
         $this->assertSame('autogen', $prop);
     }
 
