@@ -39,9 +39,9 @@ class InfluxDBLogger
 
     /**
      * Prefix to add to metrics submitted to InfluxDB.
-     * @var string
+     * @var string|null
      */
-    protected static $retention_policy_name = NULL;
+    protected static $retention_policy_name = null;
 
     /**
      * Default measurement tags.
