@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<phpunit    bootstrap="test.bootstrap.inc.php"
-            backupGlobals="false"
-            backupStaticAttributes="false"
-            forceCoversAnnotation="true"
-            processIsolation="true"
-            colors="true"
-            verbose="true">
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+         bootstrap="test.bootstrap.inc.php"
+         backupGlobals="false"
+         backupStaticAttributes="false"
+         forceCoversAnnotation="true"
+         processIsolation="true"
+         colors="true"
+         verbose="true">
     <php>
-        <ini name="zend.enable_gc" value="0" />
-        <env name="INFLUXDB_HOST" value="m2mobi.com:500" force="true" />
-        <env name="INFLUXDB_PORT" value="6000" force="true" />
-        <env name="INFLUXDB_USERNAME" value="envUser" force="true" />
-        <env name="INFLUXDB_PASSWORD" value="envPass" force="true" />
+        <ini name="zend.enable_gc" value="0"/>
+        <env name="INFLUXDB_HOST" value="m2mobi.com:500" force="true"/>
+        <env name="INFLUXDB_PORT" value="6000" force="true"/>
+        <env name="INFLUXDB_USERNAME" value="envUser" force="true"/>
+        <env name="INFLUXDB_PASSWORD" value="envPass" force="true"/>
     </php>
     <testsuites>
         <testsuite name="Base">
@@ -20,12 +21,12 @@
             <file>../lib/Tests/InfluxDBPerformTest.php</file>
         </testsuite>
     </testsuites>
-    <filter>
-        <whitelist>
+    <coverage>
+        <include>
             <directory>../lib/</directory>
-            <exclude>
-                <directory>../lib/Tests/</directory>
-            </exclude>
-        </whitelist>
-    </filter>
+        </include>
+        <exclude>
+            <directory>../lib/Tests/</directory>
+        </exclude>
+    </coverage>
 </phpunit>
