@@ -128,8 +128,8 @@ class InfluxDBPerformTest extends TestCase
 
         $tags = 'class=SomeClass,queue=queue,status=finished';
         $query  = "resque,$tags start_time=1552481660i,end_time=1552481960i,";
-        $query .= 'pop_time=1552481650i,execution_time=300i,queue_time=1000i';
-        $query .= ' 1552482605N';
+        $query .= 'pop_time=1552481650i,execution_time=300i,queue_time=1000i,';
+        $query .= 'job_id="4f181d8102ee412188728341c84a3404" 1552482605N';
         $this->driver->expects($this->exactly(1))
                      ->method('write')
                      ->with($query);
@@ -137,6 +137,7 @@ class InfluxDBPerformTest extends TestCase
         $job = new \Resque\JobHandler('queue', [
             'queue_time' => 1552480650,
             'class'      => 'SomeClass',
+            'id'         => '4f181d8102ee412188728341c84a3404',
         ]);
 
         $job->pop_time   = 1552481650;
@@ -164,8 +165,8 @@ class InfluxDBPerformTest extends TestCase
 
         $tags = 'class=SomeClass,queue=queue,status=finished';
         $query  = "resque,$tags start_time=1552481660i,end_time=1552481960i,";
-        $query .= 'pop_time=1552481650i,execution_time=300i,queue_time=1000i';
-        $query .= ' 1552482605N';
+        $query .= 'pop_time=1552481650i,execution_time=300i,queue_time=1000i,';
+        $query .= 'job_id="4f181d8102ee412188728341c84a3404" 1552482605N';
         $this->driver->expects($this->exactly(1))
                      ->method('write')
                      ->with($query);
@@ -173,6 +174,7 @@ class InfluxDBPerformTest extends TestCase
         $job = new \Resque\JobHandler('queue', [
             'queue_time' => 1552480650,
             'class'      => 'SomeClass',
+            'id'         => '4f181d8102ee412188728341c84a3404',
         ]);
 
         $job->pop_time   = 1552481650;
@@ -203,8 +205,8 @@ class InfluxDBPerformTest extends TestCase
 
         $tags = 'class=SomeClass,queue=queue,status=finished';
         $query  = "resque,$tags start_time=1552481660i,end_time=1552481960i,";
-        $query .= 'pop_time=1552481650i,execution_time=300i,queue_time=1000i';
-        $query .= ' 1552482605N';
+        $query .= 'pop_time=1552481650i,execution_time=300i,queue_time=1000i,';
+        $query .= 'job_id="4f181d8102ee412188728341c84a3404" 1552482605N';
         $this->driver->expects($this->exactly(1))
                      ->method('write')
                      ->with($query);
@@ -212,6 +214,7 @@ class InfluxDBPerformTest extends TestCase
         $job = new \Resque\JobHandler('queue', [
             'queue_time' => 1552480650,
             'class'      => 'SomeClass',
+            'id'         => '4f181d8102ee412188728341c84a3404',
         ]);
 
         $job->pop_time   = 1552481650;
@@ -240,7 +243,7 @@ class InfluxDBPerformTest extends TestCase
         $query  = 'resque,class=SomeClass,queue=queue,exception=Exception,';
         $query .= 'status=failed start_time=1552481660i,end_time=1552481960i,';
         $query .= 'pop_time=1552481650i,execution_time=300i,queue_time=1000i,';
-        $query .= 'error="FAILURE" 1552482605N';
+        $query .= 'job_id="4f181d8102ee412188728341c84a3404",error="FAILURE" 1552482605N';
 
         $this->driver->expects($this->exactly(1))
                      ->method('write')
@@ -249,6 +252,7 @@ class InfluxDBPerformTest extends TestCase
         $job = new \Resque\JobHandler('queue', [
             'queue_time' => 1552480650,
             'class'      => 'SomeClass',
+            'id'         => '4f181d8102ee412188728341c84a3404',
         ]);
 
         $job->pop_time   = 1552481650;
@@ -281,6 +285,7 @@ class InfluxDBPerformTest extends TestCase
         $job = new \Resque\JobHandler('queue', [
             'queue_time' => 1552480650,
             'class'      => 'SomeClass',
+            'id'         => '4f181d8102ee412188728341c84a3404',
         ]);
 
         $job->pop_time   = 1552481650;

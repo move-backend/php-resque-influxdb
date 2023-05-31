@@ -297,6 +297,7 @@ class InfluxDBLogger
             'pop_time'       => $job->pop_time,
             'execution_time' => $job->end_time - $job->start_time,
             'queue_time'     => $job->pop_time - $job->payload['queue_time'],
+            'job_id'         => $job->payload['id'],
         ];
 
         if (!is_null($e)) {

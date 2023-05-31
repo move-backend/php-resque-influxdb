@@ -38,6 +38,7 @@ Metrics that are sent have the following fields for a successful job:
     'start_time'     => $job->start_time,
     'end_time'       => $job->end_time,
     'pop_time'       => $job->pop_time,
+    'job_id'         => $job->payload['id'],
 
 and add the following field for an unsuccessful job:
 
