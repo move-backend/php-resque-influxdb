@@ -13,9 +13,15 @@
             "email": "heinz.wiesinger@moveagency.com"
         }
     ],
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/pprkut/php-resque.git"
+        }
+    ],
     "require": {
         "influxdb/influxdb-php": "^1.14",
-        "resque/php-resque": "^1.3",
+        "resque/php-resque": "dev-move",
         "psr/log": ">=1.1",
         "php": ">=7.4"
     },

@@ -30,13 +30,15 @@ override this behavior if desired:
 
 	\Resque\Logging\InfluxDBLogger::register();
 	\Resque\Logging\InfluxDBLogger::setDB('resque.production');
-	
-Metrics that are send have the following fields for a successful job:
 
-    'execution_time' => $executionTime,
-    'queue_time'     => $job->influxDBTimeInQueue OR 'null',
-    'start_time'     => $job->influxDBStartTime  OR 'null',
-	
+Metrics that are sent have the following fields for a successful job:
+
+    'execution_time' => $job->end_time - $job->start_time,
+    'queue_time'     => $job->pop_time - $job->payload['queue_time'],
+    'start_time'     => $job->start_time,
+    'end_time'       => $job->end_time,
+    'pop_time'       => $job->pop_time,
+
 and add the following field for an unsuccessful job:
 
     'error' => $e->getMessage()

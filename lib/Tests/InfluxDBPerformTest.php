@@ -80,7 +80,7 @@ class InfluxDBPerformTest extends TestCase
         $this->driver->expects($this->never())
                      ->method('write');
 
-        InfluxDBLogger::afterEnqueue('\Resque_Job', [], 'SomeQueue');
+        InfluxDBLogger::afterEnqueue('\Resque\JobHandler', [], 'SomeQueue');
     }
 
     /**
@@ -93,11 +93,11 @@ class InfluxDBPerformTest extends TestCase
         $this->driver->expects($this->never())
                      ->method('write');
 
-        InfluxDBLogger::afterSchedule(10000, 'SomeQueue', '\Resque_Job', []);
+        InfluxDBLogger::afterSchedule(10000, 'SomeQueue', '\Resque\JobHandler', []);
     }
 
     /**
-     * Test beforeFork only setting a value.
+     * Test beforeFork not performing any actions.
      *
      * @covers \Resque\Logging\InfluxDBLogger::beforeFork
      */
@@ -106,28 +106,8 @@ class InfluxDBPerformTest extends TestCase
         $this->driver->expects($this->never())
                      ->method('write');
 
-        $job = new \Resque_Job('queue', []);
+        $job = new \Resque\JobHandler('queue', []);
         InfluxDBLogger::beforeFork($job);
-
-        $this->assertTrue(is_float($job->influxDBStartTime));
-    }
-
-    /**
-     * Test beforeFork setting values based on payload.
-     *
-     * @covers \Resque\Logging\InfluxDBLogger::beforeFork
-     */
-    public function testBeforeForkWithQueueTime(): void
-    {
-        $this->driver->expects($this->never())
-                     ->method('write');
-
-        $job = new \Resque_Job('queue', ['queue_time' => 1000]);
-        InfluxDBLogger::beforeFork($job);
-
-        $start_time = $job->influxDBStartTime;
-        $this->assertTrue(is_float($start_time));
-        $this->assertSame($start_time - 1000, $job->influxDBTimeInQueue);
     }
 
     /**
@@ -147,18 +127,21 @@ class InfluxDBPerformTest extends TestCase
                      ]);
 
         $tags = 'class=SomeClass,queue=queue,status=finished';
-        $query = "resque,$tags execution_time=863,queue_time=1000i,start_time=1552481660i 1552482605N";
+        $query  = "resque,$tags start_time=1552481660i,end_time=1552481960i,";
+        $query .= 'pop_time=1552481650i,execution_time=300i,queue_time=1000i';
+        $query .= ' 1552482605N';
         $this->driver->expects($this->exactly(1))
                      ->method('write')
                      ->with($query);
 
-        $job = new \Resque_Job('queue', [
-            'queue_time' => 1000,
+        $job = new \Resque\JobHandler('queue', [
+            'queue_time' => 1552480650,
             'class'      => 'SomeClass',
         ]);
 
-        $job->influxDBTimeInQueue = 1000;
-        $job->influxDBStartTime   = 1552481660;
+        $job->pop_time   = 1552481650;
+        $job->start_time = 1552481660;
+        $job->end_time   = 1552481960;
 
         InfluxDBLogger::afterPerform($job);
     }
@@ -179,18 +162,22 @@ class InfluxDBPerformTest extends TestCase
                          'auth'     => ['envUser', 'envPass'],
                      ]);
 
-        $query = 'resque,class=SomeClass,queue=queue,status=finished execution_time=863,queue_time=1000i,start_time=1552481660i 1552482605N';
+        $tags = 'class=SomeClass,queue=queue,status=finished';
+        $query  = "resque,$tags start_time=1552481660i,end_time=1552481960i,";
+        $query .= 'pop_time=1552481650i,execution_time=300i,queue_time=1000i';
+        $query .= ' 1552482605N';
         $this->driver->expects($this->exactly(1))
                      ->method('write')
                      ->with($query);
 
-        $job = new \Resque_Job('queue', [
-            'queue_time' => 1000,
+        $job = new \Resque\JobHandler('queue', [
+            'queue_time' => 1552480650,
             'class'      => 'SomeClass',
         ]);
 
-        $job->influxDBTimeInQueue = 1000;
-        $job->influxDBStartTime   = 1552481660;
+        $job->pop_time   = 1552481650;
+        $job->start_time = 1552481660;
+        $job->end_time   = 1552481960;
 
         InfluxDBLogger::setRetentionPolicy('autogen');
 
@@ -215,18 +202,21 @@ class InfluxDBPerformTest extends TestCase
                      ]);
 
         $tags = 'class=SomeClass,queue=queue,status=finished';
-        $query = "resque,$tags execution_time=863,queue_time=1000i,start_time=1552481660i 1552482605N";
+        $query  = "resque,$tags start_time=1552481660i,end_time=1552481960i,";
+        $query .= 'pop_time=1552481650i,execution_time=300i,queue_time=1000i';
+        $query .= ' 1552482605N';
         $this->driver->expects($this->exactly(1))
                      ->method('write')
                      ->with($query);
 
-        $job = new \Resque_Job('queue', [
-            'queue_time' => 1000,
+        $job = new \Resque\JobHandler('queue', [
+            'queue_time' => 1552480650,
             'class'      => 'SomeClass',
         ]);
 
-        $job->influxDBTimeInQueue = 1000;
-        $job->influxDBStartTime   = 1552481660;
+        $job->pop_time   = 1552481650;
+        $job->start_time = 1552481660;
+        $job->end_time   = 1552481960;
 
         InfluxDBLogger::afterPerform($job);
     }
@@ -248,20 +238,22 @@ class InfluxDBPerformTest extends TestCase
                      ]);
 
         $query  = 'resque,class=SomeClass,queue=queue,exception=Exception,';
-        $query .= 'status=failed execution_time=863,error="FAILURE",queue_time=1000i,';
-        $query .= 'start_time=1552481660i 1552482605N';
+        $query .= 'status=failed start_time=1552481660i,end_time=1552481960i,';
+        $query .= 'pop_time=1552481650i,execution_time=300i,queue_time=1000i,';
+        $query .= 'error="FAILURE" 1552482605N';
 
         $this->driver->expects($this->exactly(1))
                      ->method('write')
                      ->with($query);
 
-        $job = new \Resque_Job('queue', [
-            'queue_time' => 1000,
+        $job = new \Resque\JobHandler('queue', [
+            'queue_time' => 1552480650,
             'class'      => 'SomeClass',
         ]);
 
-        $job->influxDBTimeInQueue = 1000;
-        $job->influxDBStartTime   = 1552481660;
+        $job->pop_time   = 1552481650;
+        $job->start_time = 1552481660;
+        $job->end_time   = 1552481960;
 
         $exception = new \Exception('FAILURE');
 
@@ -286,13 +278,14 @@ class InfluxDBPerformTest extends TestCase
                      ->method('error')
                      ->with('FAILURE', []);
 
-        $job = new \Resque_Job('queue', [
-            'queue_time' => 1000,
+        $job = new \Resque\JobHandler('queue', [
+            'queue_time' => 1552480650,
             'class'      => 'SomeClass',
         ]);
 
-        $job->influxDBTimeInQueue = 1000;
-        $job->influxDBStartTime   = 1552481660;
+        $job->pop_time   = 1552481650;
+        $job->start_time = 1552481660;
+        $job->end_time   = 1552481960;
 
         $exception = new \Exception('FAILURE');
 

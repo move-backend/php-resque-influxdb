@@ -97,13 +97,13 @@ class InfluxDBLogger
     public static function register(): void
     {
         // Core php-resque events
-        \Resque_Event::listen('afterEnqueue', 'Resque\Logging\InfluxDBLogger::afterEnqueue');
-        \Resque_Event::listen('beforeFork', 'Resque\Logging\InfluxDBLogger::beforeFork');
-        \Resque_Event::listen('afterPerform', 'Resque\Logging\InfluxDBLogger::afterPerform');
-        \Resque_Event::listen('onFailure', 'Resque\Logging\InfluxDBLogger::onFailure');
+        \Resque\Event::listen('afterEnqueue', 'Resque\Logging\InfluxDBLogger::afterEnqueue');
+        \Resque\Event::listen('beforeFork', 'Resque\Logging\InfluxDBLogger::beforeFork');
+        \Resque\Event::listen('afterPerform', 'Resque\Logging\InfluxDBLogger::afterPerform');
+        \Resque\Event::listen('onFailure', 'Resque\Logging\InfluxDBLogger::onFailure');
 
         // Add support for php-resque-scheduler
-        \Resque_Event::listen('afterSchedule', 'Resque\Logging\InfluxDBLogger::afterSchedule');
+        \Resque\Event::listen('afterSchedule', 'Resque\Logging\InfluxDBLogger::afterSchedule');
     }
 
     /**
@@ -197,16 +197,6 @@ class InfluxDBLogger
     }
 
     /**
-     * Get a microtime timestamp.
-     *
-     * @return float
-     */
-    protected static function timestamp(): float
-    {
-        return microtime(true);
-    }
-
-    /**
      * Submit metrics for a queue and job whenever a job is pushed to a queue.
      *
      * @param string       $class Class name of the job that was just created.
@@ -242,27 +232,23 @@ class InfluxDBLogger
      * Time tracking begins in `beforeFork` to ensure that the time spent for forking
      * and any hooks registered for `beforePerform` is also tracked.
      *
-     * @param \Resque_Job $job Instance of Resque_Job for the job about to be run.
+     * @param \Resque\JobHandler $job Instance of Resque\JobHandler for the job about to be run.
      *
      * @return void
      */
-    public static function beforeFork(\Resque_Job $job): void
+    public static function beforeFork(\Resque\JobHandler $job): void
     {
-        $job->influxDBStartTime = static::timestamp();
-
-        if (isset($job->payload['queue_time'])) {
-            $job->influxDBTimeInQueue = $job->influxDBStartTime - $job->payload['queue_time'];
-        }
+        //NO-OP
     }
 
     /**
      * Submit metrics for a queue and job as soon as job has finished executing successfully.
      *
-     * @param \Resque_Job $job Instance of Resque_Job for the job that's just been executed.
+     * @param \Resque\JobHandler $job Instance of Resque\JobHandler for the job that's just been executed.
      *
      * @return void
      */
-    public static function afterPerform(\Resque_Job $job): void
+    public static function afterPerform(\Resque\JobHandler $job): void
     {
         self::sendMetric(
             self::getJobField($job, null),
@@ -278,11 +264,11 @@ class InfluxDBLogger
      * Submit metrics for a queue and job whenever a job fails to run.
      *
      * @param \Throwable  $e   Exception thrown by the job.
-     * @param \Resque_Job $job Instance of Resque_Job for the job that failed.
+     * @param \Resque\JobHandler $job Instance of Resque\JobHandler for the job that failed.
      *
      * @return void
      */
-    public static function onFailure(\Throwable $e, \Resque_Job $job): void
+    public static function onFailure(\Throwable $e, \Resque\JobHandler $job): void
     {
         self::sendMetric(
             self::getJobField($job, $e),
@@ -298,26 +284,23 @@ class InfluxDBLogger
     /**
      * Get fields that need to be in influxDB.
      *
-     * @param \Resque_Job $job Instance of Resque_Job for the job that failed.
+     * @param \Resque\JobHandler $job Instance of Resque\JobHandler for the job that failed.
      * @param \Throwable  $e   Exception thrown by the job.
      *
      * @return array<string, mixed> Fields relevant for the job.
      */
-    private static function getJobField(\Resque_Job $job, \Throwable $e = null): array
+    private static function getJobField(\Resque\JobHandler $job, \Throwable $e = null): array
     {
-        $executionTime = static::timestamp() - $job->influxDBStartTime;
-        $fields        = ['execution_time' => $executionTime];
+        $fields        = [
+            'start_time'     => $job->start_time,
+            'end_time'       => $job->end_time,
+            'pop_time'       => $job->pop_time,
+            'execution_time' => $job->end_time - $job->start_time,
+            'queue_time'     => $job->pop_time - $job->payload['queue_time'],
+        ];
 
         if (!is_null($e)) {
             $fields['error'] = $e->getMessage();
-        }
-
-        if (isset($job->influxDBTimeInQueue)) {
-            $fields['queue_time'] = $job->influxDBTimeInQueue;
-        }
-
-        if (isset($job->influxDBStartTime)) {
-            $fields['start_time'] = $job->influxDBStartTime;
         }
 
         return $fields;

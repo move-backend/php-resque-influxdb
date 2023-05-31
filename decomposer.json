@@ -1,9 +1,11 @@
 {
     "PHP-Resque": {
-        "url": "https://github.com/resque/php-resque.git",
-        "version": "1.3.6",
-        "psr0": {
-            "path": "/lib/"
+        "url": "https://github.com/pprkut/php-resque.git",
+        "version": "1.99.0",
+        "revision": "move",
+        "psr4": {
+            "prefix": "Resque",
+            "search-path": "/lib/"
         }
     },
     "Psr-Log": {

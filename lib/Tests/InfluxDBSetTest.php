@@ -174,7 +174,7 @@ class InfluxDBSetTest extends TestCase
     {
         InfluxDBLogger::register();
 
-        $resque_reflection = new \ReflectionClass('\Resque_Event');
+        $resque_reflection = new \ReflectionClass('\Resque\Event');
 
         $prop = $resque_reflection->getStaticProperties()['events'] ?? [];
         $this->assertArrayHasKey('afterEnqueue', $prop);

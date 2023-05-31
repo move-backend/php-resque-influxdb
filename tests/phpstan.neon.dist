@@ -1,5 +1,3 @@
 parameters:
     excludes_analyse:
         - ../lib/Tests/*
-    universalObjectCratesClasses:
-        - Resque_Job
