@@ -202,10 +202,11 @@ class InfluxDBLogger
      * @param string       $class Class name of the job that was just created.
      * @param array<mixed> $args  Arguments passed to the job.
      * @param string       $queue Name of the queue the job was created in.
+     * @param string       $id    The ID of the job that was queued.
      *
      * @return void
      */
-    public static function afterEnqueue(string $class, array $args, string $queue): void
+    public static function afterEnqueue(string $class, array $args, string $queue, string $id): void
     {
         //NO-OP
     }

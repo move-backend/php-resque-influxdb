@@ -80,7 +80,7 @@ class InfluxDBPerformTest extends TestCase
         $this->driver->expects($this->never())
                      ->method('write');
 
-        InfluxDBLogger::afterEnqueue('\Resque\JobHandler', [], 'SomeQueue');
+        InfluxDBLogger::afterEnqueue('\Resque\JobHandler', [], 'SomeQueue', '496f7898-bb72-4183-9988-f067017a66ba');
     }
 
     /**
