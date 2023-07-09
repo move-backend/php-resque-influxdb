@@ -3,8 +3,9 @@
 /**
  * This file contains the InfluxDBSetTest.php
  *
- * @package \Resque\Logging
- * @author  Sean Molenaar <sean@m2mobi.com>
+ * SPDX-FileCopyrightText: Copyright 2017 M2mobi B.V., Amsterdam, The Netherlands
+ * SPDX-FileCopyrightText: Copyright 2022 Move Agency Group B.V., Zwolle, The Netherlands
+ * SPDX-License-Identifier: MIT
  */
 
 namespace Resque\Logging\Tests;

@@ -3,11 +3,9 @@
 /**
  * php-resque-InfluxDB
  *
- * @package         php-resque-influxdb
- * @author          Chris Boulton <chris@bigcommerce.com>
- * @author          Sean Molenaar <sean@m2mobi.com>
- * @copyright   (c) 2017 Sean Molenaar
- * @license         http://www.opensource.org/licenses/mit-license.php
+ * SPDX-FileCopyrightText: Copyright 2017 M2mobi B.V., Amsterdam, The Netherlands
+ * SPDX-FileCopyrightText: Copyright 2022 Move Agency Group B.V., Zwolle, The Netherlands
+ * SPDX-License-Identifier: MIT
  */
 
 declare(strict_types=1);

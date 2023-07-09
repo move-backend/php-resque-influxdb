@@ -1,8 +1,10 @@
 <?php
 /**
  * Setup for unittests.
- * @package Tests
- * @author Sean Molenaar <sean@m2mobi.com>
+ *
+ * SPDX-FileCopyrightText: Copyright 2017 M2mobi B.V., Amsterdam, The Netherlands
+ * SPDX-FileCopyrightText: Copyright 2022 Move Agency Group B.V., Zwolle, The Netherlands
+ * SPDX-License-Identifier: MIT
  */
 
 $base = __DIR__ . '/..';
