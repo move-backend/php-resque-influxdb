@@ -262,19 +262,19 @@ class InfluxDBLogger
     /**
      * Submit metrics for a queue and job whenever a job fails to run.
      *
-     * @param \Throwable  $e   Exception thrown by the job.
-     * @param \Resque\JobHandler $job Instance of Resque\JobHandler for the job that failed.
+     * @param \Throwable         $exception Exception thrown by the job.
+     * @param \Resque\JobHandler $job       Instance of Resque\JobHandler for the job that failed.
      *
      * @return void
      */
-    public static function onFailure(\Throwable $e, \Resque\JobHandler $job): void
+    public static function onFailure(\Throwable $exception, \Resque\JobHandler $job): void
     {
         self::sendMetric(
-            self::getJobField($job, $e),
+            self::getJobField($job, $exception),
             [
                              'class'     => $job->payload['class'],
                              'queue'     => $job->queue,
-                             'exception' => get_class($e),
+                             'exception' => get_class($exception),
                              'status'    => 'failed',
                          ]
         );
