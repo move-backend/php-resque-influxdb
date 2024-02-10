@@ -1,0 +1,19 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: php-resque-influxdb
+Upstream-Contact: Move <info@moveagency.com>
+Source: https://github.com/move-backend/php-resque-influxdb
+
+Files: composer.json
+Copyright: 2018 M2mobi B.V., Amsterdam, The Netherlands
+           2022 Move Agency Group B.V., Zwolle, The Netherlands
+License: CC0-1.0
+
+Files: decomposer.json
+Copyright: 2021 M2mobi B.V., Amsterdam, The Netherlands
+           2022 Move Agency Group B.V., Zwolle, The Netherlands
+License: CC0-1.0
+
+Files: README.md
+Copyright: 2017 M2mobi B.V., Amsterdam, The Netherlands
+           2022 Move Agency Group B.V., Zwolle, The Netherlands
+License: CC0-1.0

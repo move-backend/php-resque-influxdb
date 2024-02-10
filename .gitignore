@@ -1,5 +1,15 @@
-/vendor/
-/tests/*.cache
+# SPDX-FileCopyrightText: Copyright 2019 M2mobi B.V., Amsterdam, The Netherlands
+# SPDX-FileCopyrightText: Copyright 2022 Move Agency Group B.V., Zwolle, The Netherlands
+# SPDX-License-Identifier: CC0-1.0
+
+# Files to be ignored by git
+*.kdev4
+*.swp
+*~
+
+# ignore generated files
+vendor
+composer.lock
 decomposer.autoload.inc.php
 decomposer.diffnotes.md
-composer.lock
+tests/*.cache
