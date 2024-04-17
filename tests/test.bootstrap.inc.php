@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Setup for unittests.
  *
@@ -9,13 +10,10 @@
 
 $base = __DIR__ . '/..';
 
-if (file_exists($base . '/vendor/autoload.php') == TRUE)
-{
+if (file_exists($base . '/vendor/autoload.php') == true) {
     // Load composer autoloader.
     require_once $base . '/vendor/autoload.php';
-}
-else
-{
+} else {
     // Load decomposer autoloader.
     require_once $base . '/decomposer.autoload.inc.php';
     autoload_register_psr4_prefix('Resque\Logging', 'lib/');

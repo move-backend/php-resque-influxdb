@@ -45,7 +45,7 @@ jobs:
 
   phpcs:
     runs-on: ubuntu-latest
-    continue-on-error: true
+    continue-on-error: false
     name: "PHPCS"
     steps:
       - name: Checkout
@@ -58,7 +58,7 @@ jobs:
           tools: cs2pr, phpcs
 
       - name: Run PHPCS
-        run: phpcs -q --report=checkstyle lib --standard=PSR12 | cs2pr
+        run: phpcs -q --report=checkstyle lib tests/test.bootstrap.inc.php --standard=PSR12 | cs2pr
 
   phpstan:
     runs-on: ubuntu-latest
