@@ -3,5 +3,5 @@
 # SPDX-License-Identifier: CC0-1.0
 
 parameters:
-    excludes_analyse:
+    excludePaths:
         - ../lib/Tests/*
