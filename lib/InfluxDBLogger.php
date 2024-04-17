@@ -387,7 +387,7 @@ class InfluxDBLogger
             $point->setTags($tags);
             $point->setTimestamp(exec('date +%s%N') ?: sprintf('%d', microtime(true) * 1000000) . '000');
 
-            $db->writePoints([$point], \InfluxDB\Database::PRECISION_NANOSECONDS, self::$retention_policy_name);
+            $db->writePoints(points: [ $point ], retentionPolicy: self::$retention_policy_name);
         } catch (\InfluxDB\Exception $exception) {
             if (!is_null(self::$logger)) {
                 self::$logger->error($exception->getMessage());
