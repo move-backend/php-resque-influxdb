@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace Resque\Logging;
 
+use DateTime;
 use InfluxDB\Client;
 use InfluxDB\Database;
 use InfluxDB\Driver\DriverInterface;
+use InfluxDB\Exception as InfluxDBException;
 use InfluxDB\Point;
 use Psr\Log\LoggerInterface;
+use Resque\Event;
+use Resque\JobHandler;
+use Throwable;
 
 /**
  * Class ResqueInfluxDB
@@ -25,63 +30,63 @@ class InfluxDBLogger
 {
     /**
      * Prefix to add to metrics submitted to InfluxDB.
-     * @var string
+     * @var non-empty-string
      */
-    protected static $db_name = 'resque';
+    protected static string $db_name = 'resque';
 
     /**
      * Measurement name in InfluxDB.
-     * @var string
+     * @var non-empty-string
      */
-    protected static $measurement_name = 'resque';
+    protected static string $measurement_name = 'resque';
 
     /**
      * Prefix to add to metrics submitted to InfluxDB.
-     * @var string|null
+     * @var non-empty-string|null
      */
-    protected static $retention_policy_name = null;
+    protected static ?string $retention_policy_name = null;
 
     /**
      * Default measurement tags.
      * @var array<string, string>
      */
-    protected static $default_tags = [];
+    protected static array $default_tags = [];
 
     /**
      * Hostname when connecting to InfluxDB.
-     * @var string
+     * @var non-empty-string
      */
-    protected static $host = 'localhost';
+    protected static string $host = 'localhost';
 
     /**
      * Port InfluxDB is running on.
      * @var int
      */
-    protected static $port = 8086;
+    protected static int $port = 8086;
 
     /**
      * The InfluxDB user.
      * @var string
      */
-    protected static $user = '';
+    protected static string $user = '';
 
     /**
      * Password for the InfluxDB user.
      * @var string
      */
-    protected static $password = '';
+    protected static string $password = '';
 
     /**
      * InfluxDB request driver.
      * @var DriverInterface|null
      */
-    protected static $driver = null;
+    protected static ?DriverInterface $driver = null;
 
     /**
      * Logger.
      * @var LoggerInterface|null
      */
-    private static $logger = null;
+    private static ?LoggerInterface $logger = null;
 
     /**
      * Register php-resque-Influxdb in php-resque.
@@ -95,22 +100,22 @@ class InfluxDBLogger
     public static function register(): void
     {
         // Core php-resque events
-        \Resque\Event::listen('afterEnqueue', 'Resque\Logging\InfluxDBLogger::afterEnqueue');
-        \Resque\Event::listen('beforeFork', 'Resque\Logging\InfluxDBLogger::beforeFork');
-        \Resque\Event::listen('afterPerform', 'Resque\Logging\InfluxDBLogger::afterPerform');
-        \Resque\Event::listen('onFailure', 'Resque\Logging\InfluxDBLogger::onFailure');
+        Event::listen('afterEnqueue', 'Resque\Logging\InfluxDBLogger::afterEnqueue');
+        Event::listen('beforeFork', 'Resque\Logging\InfluxDBLogger::beforeFork');
+        Event::listen('afterPerform', 'Resque\Logging\InfluxDBLogger::afterPerform');
+        Event::listen('onFailure', 'Resque\Logging\InfluxDBLogger::onFailure');
 
         // Add support for php-resque-scheduler
-        \Resque\Event::listen('afterSchedule', 'Resque\Logging\InfluxDBLogger::afterSchedule');
+        Event::listen('afterSchedule', 'Resque\Logging\InfluxDBLogger::afterSchedule');
     }
 
     /**
      * Set the host/port combination of InfluxDB.
      *
-     * @param string  $host     Hostname/IP of InfluxDB server.
-     * @param integer $port     Port InfluxDB is listening on.
-     * @param string  $username Username for InfluxDB
-     * @param string  $password Password for InfluxDB
+     * @param non-empty-string  $host     Hostname/IP of InfluxDB server.
+     * @param integer           $port     Port InfluxDB is listening on.
+     * @param string            $username Username for InfluxDB
+     * @param string            $password Password for InfluxDB
      *
      * @return void
      */
@@ -149,7 +154,7 @@ class InfluxDBLogger
     /**
      * Override the db for metrics that are submitted to InfluxDB.
      *
-     * @param string $db Prefix to use for metrics.
+     * @param non-empty-string $db Prefix to use for metrics.
      *
      * @return void
      */
@@ -161,7 +166,7 @@ class InfluxDBLogger
     /**
      * Override the retention policy for metrics that are submitted to InfluxDB.
      *
-     * @param string $retention_policy Retention policy to use for metrics.
+     * @param non-empty-string $retention_policy Retention policy to use for metrics.
      *
      * @return void
      */
@@ -173,7 +178,7 @@ class InfluxDBLogger
     /**
      * Override the measurement name for metrics that are submitted to InfluxDB.
      *
-     * @param string $name Name to use for measurements.
+     * @param non-empty-string $name Name to use for measurements.
      *
      * @return void
      */
@@ -197,10 +202,10 @@ class InfluxDBLogger
     /**
      * Submit metrics for a queue and job whenever a job is pushed to a queue.
      *
-     * @param string       $class Class name of the job that was just created.
-     * @param array<mixed> $args  Arguments passed to the job.
-     * @param string       $queue Name of the queue the job was created in.
-     * @param string       $id    The ID of the job that was queued.
+     * @param string              $class Class name of the job that was just created.
+     * @param array<string,mixed> $args  Arguments passed to the job.
+     * @param string              $queue Name of the queue the job was created in.
+     * @param string              $id    The ID of the job that was queued.
      *
      * @return void
      */
@@ -212,14 +217,14 @@ class InfluxDBLogger
     /**
      * Submit metrics for a queue and job whenever a job is scheduled in php-resque-scheduler.
      *
-     * @param \DateTime|integer $at    Instance of PHP DateTime object or int of UNIX timestamp.
-     * @param string            $queue Name of the queue the job was created in.
-     * @param string            $class Class name of the job that was just created.
-     * @param array<mixed>      $args  Arguments passed to the job.
+     * @param DateTime|int        $at    Instance of PHP DateTime object or int of UNIX timestamp.
+     * @param string              $queue Name of the queue the job was created in.
+     * @param string              $class Class name of the job that was just created.
+     * @param array<string,mixed> $args  Arguments passed to the job.
      *
      * @return void
      */
-    public static function afterSchedule($at, string $queue, string $class, array $args): void
+    public static function afterSchedule(DateTime|int $at, string $queue, string $class, array $args): void
     {
         //NO-OP
     }
@@ -231,11 +236,11 @@ class InfluxDBLogger
      * Time tracking begins in `beforeFork` to ensure that the time spent for forking
      * and any hooks registered for `beforePerform` is also tracked.
      *
-     * @param \Resque\JobHandler $job Instance of Resque\JobHandler for the job about to be run.
+     * @param JobHandler $job Instance of Resque\JobHandler for the job about to be run.
      *
      * @return void
      */
-    public static function beforeFork(\Resque\JobHandler $job): void
+    public static function beforeFork(JobHandler $job): void
     {
         //NO-OP
     }
@@ -243,11 +248,11 @@ class InfluxDBLogger
     /**
      * Submit metrics for a queue and job as soon as job has finished executing successfully.
      *
-     * @param \Resque\JobHandler $job Instance of Resque\JobHandler for the job that's just been executed.
+     * @param JobHandler $job Instance of Resque\JobHandler for the job that's just been executed.
      *
      * @return void
      */
-    public static function afterPerform(\Resque\JobHandler $job): void
+    public static function afterPerform(JobHandler $job): void
     {
         self::sendMetric(
             self::getJobField($job, null),
@@ -262,12 +267,12 @@ class InfluxDBLogger
     /**
      * Submit metrics for a queue and job whenever a job fails to run.
      *
-     * @param \Throwable         $exception Exception thrown by the job.
-     * @param \Resque\JobHandler $job       Instance of Resque\JobHandler for the job that failed.
+     * @param Throwable  $exception Exception thrown by the job.
+     * @param JobHandler $job       Instance of Resque\JobHandler for the job that failed.
      *
      * @return void
      */
-    public static function onFailure(\Throwable $exception, \Resque\JobHandler $job): void
+    public static function onFailure(Throwable $exception, JobHandler $job): void
     {
         self::sendMetric(
             self::getJobField($job, $exception),
@@ -283,12 +288,12 @@ class InfluxDBLogger
     /**
      * Get fields that need to be in influxDB.
      *
-     * @param \Resque\JobHandler $job Instance of Resque\JobHandler for the job that failed.
-     * @param \Throwable  $e   Exception thrown by the job.
+     * @param JobHandler $job Instance of Resque\JobHandler for the job that failed.
+     * @param Throwable  $e   Exception thrown by the job.
      *
-     * @return array<string, mixed> Fields relevant for the job.
+     * @return array<string, bool|float|int|string> Fields relevant for the job.
      */
-    private static function getJobField(\Resque\JobHandler $job, \Throwable $e = null): array
+    private static function getJobField(JobHandler $job, Throwable $e = null): array
     {
         $fields        = [
             'start_time'     => $job->start_time,
@@ -317,7 +322,7 @@ class InfluxDBLogger
      * If the host variable includes a single colon, the first part of the string
      * is used for the host, and the second part for the port.
      *
-     * @return \InfluxDB\Client Prepared InfluxDB client.
+     * @return Client Prepared InfluxDB client.
      */
     private static function getInfluxDBClient(): Client
     {
@@ -358,7 +363,7 @@ class InfluxDBLogger
     /**
      * Get a database object
      *
-     * @return \InfluxDB\Database
+     * @return Database
      */
     private static function getDB(): Database
     {
@@ -371,8 +376,8 @@ class InfluxDBLogger
     /**
      * Submit a metric of the given type, name and value to InfluxDB.
      *
-     * @param array<string,mixed> $fields Key=>Value pair to indicate fields
-     * @param array<string,string> $tags   Array of tags to submit
+     * @param array<string,bool|float|int|string> $fields Key=>Value pair to indicate fields
+     * @param array<string,string>                $tags   Array of tags to submit
      *
      * @return bool True if the metric was submitted successfully.
      */
@@ -388,7 +393,7 @@ class InfluxDBLogger
             $point->setTimestamp(exec('date +%s%N') ?: sprintf('%d', microtime(true) * 1000000) . '000');
 
             $db->writePoints(points: [ $point ], retentionPolicy: self::$retention_policy_name);
-        } catch (\InfluxDB\Exception $exception) {
+        } catch (InfluxDBException $exception) {
             if (!is_null(self::$logger)) {
                 self::$logger->error($exception->getMessage());
             }
