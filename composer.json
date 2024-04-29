@@ -17,17 +17,13 @@
         {
             "type": "git",
             "url": "https://github.com/pprkut/php-resque.git"
-        },
-        {
-            "type": "git",
-            "url": "https://github.com/move-backend/influxdb-php.git"
         }
     ],
     "require": {
-        "influxdb/influxdb-php": "^1.16",
+        "influxdb/influxdb-php": "^1.14",
         "resque/php-resque": "dev-move",
         "psr/log": ">=1.1",
-        "php": ">=8.1"
+        "php": ">=7.4"
     },
     "autoload": {
         "psr-4": {"Resque\\Logging\\": "lib/"}
