@@ -59,7 +59,7 @@ variables if they exist and use them when connecting to InfluxDB:
  * `INFLUXDB_PASSWORD`
 
 To ease integration with existing setups, if `INFLUXDB_HOST` includes
-a single colon and then one or more numbers, this will be interpretted
+a single colon and then one or more numbers, this will be interpreted
 as a HOST:PORT combination and both the host and port will be set accordingly.
 
 If you don't use environment variables in your project, you can still tell
