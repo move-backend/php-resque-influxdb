@@ -20,8 +20,7 @@
     </php>
     <testsuites>
         <testsuite name="Base">
-            <file>../lib/Tests/InfluxDBSetTest.php</file>
-            <file>../lib/Tests/InfluxDBPerformTest.php</file>
+            <directory>../lib/Tests/</directory>
         </testsuite>
     </testsuites>
     <coverage>
