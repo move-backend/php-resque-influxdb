@@ -1,8 +1,8 @@
 {
     "PHP-Resque": {
         "url": "https://github.com/pprkut/php-resque.git",
-        "version": "1.99.0",
-        "revision": "move",
+        "version": "1.99.1",
+        "revision": "2f2f3a6742cdfa30e6e143c9b5c310ea4f51f67e",
         "psr4": {
             "prefix": "Resque",
             "search-path": "/lib/"
@@ -18,8 +18,7 @@
     },
     "influxdb-php": {
         "url": "https://github.com/m2mobi/influxdb-php.git",
-        "version": "1.15.0.90",
-        "revision": "1.15.0.x",
+        "version": "1.16.1",
         "psr4": {
             "prefix": "InfluxDB",
             "search-path": "/src/InfluxDB/"
