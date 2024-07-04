@@ -129,14 +129,50 @@ class InfluxDBPerformTest extends TestCase
 
         $tags = 'class=SomeClass,queue=queue,status=finished';
         $query  = "resque,$tags start_time=1552481660.5678,end_time=1552481960.1259,";
-        $query .= 'pop_time=1552481650.1234,execution_time=299.55809998512,queue_time=1001.0889000893,';
-        $query .= 'job_id="4f181d8102ee412188728341c84a3404" 1552482605N';
+        $query .= 'pop_time=1552481650.1234,execution_time=299.55809998512,';
+        $query .= 'job_id="4f181d8102ee412188728341c84a3404",queue_time=1001.0889000893 1552482605N';
         $this->driver->expects($this->exactly(1))
                      ->method('write')
                      ->with($query);
 
         $job = new \Resque\JobHandler('queue', [
             'queue_time' => 1552480649.0345,
+            'class'      => 'SomeClass',
+            'id'         => '4f181d8102ee412188728341c84a3404',
+        ]);
+
+        $job->pop_time   = 1552481650.1234;
+        $job->start_time = 1552481660.5678;
+        $job->end_time   = 1552481960.1259;
+
+        InfluxDBLogger::afterPerform($job);
+    }
+
+    /**
+     * Test afterPerform setting values based on payload.
+     *
+     * @covers \Resque\Logging\InfluxDBLogger::afterPerform
+     */
+    public function testAfterPerformWithoutQueueTime(): void
+    {
+        $this->driver->expects($this->exactly(1))
+                     ->method('setParameters')
+                     ->with([
+                         'url'      => 'write?db=resque&precision=n',
+                         'database' => 'resque',
+                         'method'   => 'post',
+                         'auth'     => ['envUser', 'envPass'],
+                     ]);
+
+        $tags = 'class=SomeClass,queue=queue,status=finished';
+        $query  = "resque,$tags start_time=1552481660.5678,end_time=1552481960.1259,";
+        $query .= 'pop_time=1552481650.1234,execution_time=299.55809998512,';
+        $query .= 'job_id="4f181d8102ee412188728341c84a3404" 1552482605N';
+        $this->driver->expects($this->exactly(1))
+                     ->method('write')
+                     ->with($query);
+
+        $job = new \Resque\JobHandler('queue', [
             'class'      => 'SomeClass',
             'id'         => '4f181d8102ee412188728341c84a3404',
         ]);
@@ -166,8 +202,8 @@ class InfluxDBPerformTest extends TestCase
 
         $tags = 'class=SomeClass,queue=queue,status=finished';
         $query  = "resque,$tags start_time=1552481660.5678,end_time=1552481960.1259,";
-        $query .= 'pop_time=1552481650.1234,execution_time=299.55809998512,queue_time=1001.0889000893,';
-        $query .= 'job_id="4f181d8102ee412188728341c84a3404" 1552482605N';
+        $query .= 'pop_time=1552481650.1234,execution_time=299.55809998512,';
+        $query .= 'job_id="4f181d8102ee412188728341c84a3404",queue_time=1001.0889000893 1552482605N';
         $this->driver->expects($this->exactly(1))
                      ->method('write')
                      ->with($query);
@@ -206,8 +242,8 @@ class InfluxDBPerformTest extends TestCase
 
         $tags = 'class=SomeClass,queue=queue,status=finished';
         $query  = "resque,$tags start_time=1552481660.5678,end_time=1552481960.1259,";
-        $query .= 'pop_time=1552481650.1234,execution_time=299.55809998512,queue_time=1001.0889000893,';
-        $query .= 'job_id="4f181d8102ee412188728341c84a3404" 1552482605N';
+        $query .= 'pop_time=1552481650.1234,execution_time=299.55809998512,';
+        $query .= 'job_id="4f181d8102ee412188728341c84a3404",queue_time=1001.0889000893 1552482605N';
         $this->driver->expects($this->exactly(1))
                      ->method('write')
                      ->with($query);
@@ -243,8 +279,8 @@ class InfluxDBPerformTest extends TestCase
 
         $query  = 'resque,class=SomeClass,queue=queue,exception=Exception,';
         $query .= 'status=failed start_time=1552481660.5678,end_time=1552481960.1259,';
-        $query .= 'pop_time=1552481650.1234,execution_time=299.55809998512,queue_time=1001.0889000893,';
-        $query .= 'job_id="4f181d8102ee412188728341c84a3404",error="FAILURE" 1552482605N';
+        $query .= 'pop_time=1552481650.1234,execution_time=299.55809998512,';
+        $query .= 'job_id="4f181d8102ee412188728341c84a3404",queue_time=1001.0889000893,error="FAILURE" 1552482605N';
 
         $this->driver->expects($this->exactly(1))
                      ->method('write')
